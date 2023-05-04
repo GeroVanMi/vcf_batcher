@@ -8,7 +8,7 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/GeroVanMi/vcf_batcher"
 repository = "https://github.com/GeroVanMi/vcf_batcher"
-keywords = ["vcf", "batch", "multiprocessing", "batching", "variant call file", "1000Genomes", "distributed"]
+keywords = ["vcf", "batch", "multiprocessing", "batching", "variant_call_file", "1000Genomes", "distributed"]
 categories = ["command-line-utilities"]
 
 [dependencies]
