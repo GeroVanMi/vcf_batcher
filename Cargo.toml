@@ -1,0 +1,13 @@
+[package]
+name = "vcf_batch"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bgzip = { version = "0.3.1", features = ["rayon"] }
+clap = { version = "4.2.4", features = ["derive"] }
+either = "1.8.1"
+indicatif = "0.17.3"
+time = "0.3.20"

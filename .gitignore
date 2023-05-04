@@ -1,0 +1,8 @@
+# IDE
+.idea/
+
+# Rust
+/target/
+
+# Tests
+/test_data/result_batches/
