@@ -8,16 +8,21 @@ mod batch;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
+#[command(author, version, about, long_about = None)]
 struct Cli {
     /// The path to the file to read
     input_path: String,
+
     /// The path to the directory to write
     output_path: String,
-    #[arg(short, long, default_value_t = 100)]
+
+    /// How many lines of data should be contained in the file, excluding the header
+    #[arg(short, long, default_value_t = 25000)]
     batch_size: usize,
-    // Optional compression level
-    #[arg(short, long, default_value = "None")]
-    compression_level: String,
+
+    /// BGzip compression level, options are "Default", Fast", "Best", "Default" and "None".
+    #[arg(short, long)]
+    compression_level: Option<String>,
 }
 
 fn main() {
@@ -28,17 +33,17 @@ fn main() {
     let output_path = Path::new(&args.output_path);
     let batch_size = args.batch_size;
 
-    // TODO: Add support for compression level
     let compression_level: Option<Compression> = match args.compression_level {
-        _ => None,
+        Some(user_input) => match user_input.to_lowercase().as_ref() {
+            "fast" => Some(Compression::fast()),
+            "best" => Some(Compression::best()),
+            "default" => Some(Compression::default()),
+            _ => None,
+        },
+        None => None,
     };
 
-    batch::extract_variants_to_batches(
-        &input_path,
-        batch_size,
-        output_path,
-        compression_level,
-    );
+    batch::extract_variants_to_batches(&input_path, batch_size, output_path, compression_level);
 
     let elapsed_time = start.elapsed();
     println!(

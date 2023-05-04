@@ -84,12 +84,10 @@ where
     let file = File::open(&file_path).expect("File does not exist.");
     // If the file ends in .gz, we assume it is bgzipped
     if file_path.as_ref().to_str().unwrap().ends_with(".gz") {
-        println!("Reading compressed file");
         let reader = BGZFReader::new(file).expect("An error occurred reading the compressed file.");
         return Ok(ZippedLines(reader.lines()));
     }
 
-    println!("Reading uncompressed file");
     Ok(UnzippedLines(BufReader::new(file).lines()))
 }
 
@@ -251,4 +249,3 @@ mod tests {
         }
     }
 }
-
