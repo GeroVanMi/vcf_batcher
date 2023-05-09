@@ -1,5 +1,5 @@
 [package]
-name = "vcf-batcher"
+name = "vcf_batcher"
 description = "Command-line tool to cut VCF (variant call files) into smaller batches, intended to be used for multiprocessing or distributed computing."
 version = "0.2.0"
 edition = "2021"
@@ -12,11 +12,11 @@ keywords = ["vcf", "batch", "batching", "variant_call_file"]
 categories = ["command-line-utilities"]
 
 [lib]
-name = "vcf_batcher_lib"
+name = "vcf_batcher"
 crate-type = ["lib", "cdylib"]
 
 [[bin]]
-name = "vcf-batcher"
+name = "vcf_batcher_cli"
 path = "src/main.rs"
 
 [dependencies]
