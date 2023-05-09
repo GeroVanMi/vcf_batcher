@@ -1,19 +1,28 @@
 [package]
-name = "vcf_batcher"
-description = "Rust crate to cut VCF (variant call files) into smaller batches, intended to be used for multiprocessing or distributed computing."
-version = "0.1.0"
+name = "vcf-batcher"
+description = "Command-line tool to cut VCF (variant call files) into smaller batches, intended to be used for multiprocessing or distributed computing."
+version = "0.2.0"
 edition = "2021"
 authors = ["Gérôme Meyer <gerome.meyer@icloud.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/GeroVanMi/vcf_batcher"
 repository = "https://github.com/GeroVanMi/vcf_batcher"
-keywords = ["vcf", "batch", "batching", "variant_call_file" ]
+keywords = ["vcf", "batch", "batching", "variant_call_file"]
 categories = ["command-line-utilities"]
+
+[lib]
+name = "vcf_batcher"
+crate-type = ["lib", "cdylib"]
+
+[[bin]]
+name = "vcf-batcher-cli"
+path = "src/main.rs"
 
 [dependencies]
 bgzip = { version = "0.3.1", features = ["rayon"] }
 clap = { version = "4.2.4", features = ["derive"] }
 either = "1.8.1"
 indicatif = "0.17.3"
+pyo3 = { version = "0.18.3", features = ["extension-module"] }
 time = "0.3.20"

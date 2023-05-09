@@ -1,10 +1,15 @@
+//! # VCF Batcher
+//! A library for converting large VCF files into batches of smaller VCF files containing a fixed number of samples.
+//! Can also be used as a command line tool.
+
 use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
 
-use crate::batch::ReaderLines::{UnzippedLines, ZippedLines};
-use bgzip::{write::BGZFMultiThreadWriter, BGZFError, BGZFReader, Compression};
+use bgzip::{BGZFError, BGZFReader, Compression, write::BGZFMultiThreadWriter};
+use pyo3::prelude::*;
+use self::ReaderLines::{UnzippedLines, ZippedLines};
 
 trait AppendLine {
     fn append_line(&mut self, line: &str) -> &String;
@@ -17,9 +22,23 @@ impl AppendLine for String {
         self
     }
 }
-enum ReaderLines {
+
+/// Wrapper for the lines of a file.
+/// If the file is bgzipped, the lines are read with a BGZFReader.
+pub enum ReaderLines {
     UnzippedLines(io::Lines<BufReader<File>>),
     ZippedLines(io::Lines<BGZFReader<File>>),
+}
+
+impl Iterator for ReaderLines {
+    type Item = Result<String, io::Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            UnzippedLines(lines) => lines.next(),
+            ZippedLines(lines) => lines.next(),
+        }
+    }
 }
 
 /// Saves a batch of variants to a file.
@@ -27,12 +46,13 @@ enum ReaderLines {
 /// # Examples
 ///
 /// ```
-/// save_batch("Hello, world!".to_string(), 1, Path::new("test"), None);
+/// use std::path::Path;
+/// use vcf_batcher::save_batch;
+/// save_batch("Hello, world!".to_string(), &1, Path::new("test"), None);
 /// ```
-// Writes the contents of a string to a file
-fn save_batch(
+pub fn save_batch(
     contents: String,
-    batch_number: &usize,
+    batch_number: &i32,
     output_path: &Path,
     compression_level: Option<Compression>,
 ) -> Result<(), BGZFError> {
@@ -64,22 +84,12 @@ fn save_batch(
     Ok(())
 }
 
-impl Iterator for ReaderLines {
-    type Item = Result<String, std::io::Error>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            UnzippedLines(lines) => lines.next(),
-            ZippedLines(lines) => lines.next(),
-        }
-    }
-}
 
 /// The output is wrapped in a Result to allow matching on errors
 /// Returns an Iterator to the Reader of the lines of the file.
-fn read_lines<P>(file_path: P) -> Result<ReaderLines, io::Error>
-where
-    P: AsRef<Path>,
+pub fn read_lines<P>(file_path: P) -> Result<ReaderLines, io::Error>
+    where
+        P: AsRef<Path>,
 {
     let file = File::open(&file_path).expect("File does not exist.");
     // If the file ends in .gz, we assume it is bgzipped
@@ -97,14 +107,36 @@ where
 /// # Examples
 ///
 /// ```
-/// for line in lines.flatten() {
-///     if is_header_line(&line) {
-///         headers.append_line(&line);
-///         continue;
-///    }
+/// #[doc(hidden)]
+/// use vcf_batcher::{is_header_line, read_lines};
+/// #[doc(hidden)]
+/// let file_path = "test_data/batch_01.vcf.gz";
+/// #[doc(hidden)]
+/// let mut headers = String::new();
+/// #[doc(hidden)]
+/// trait AppendLine {
+///     fn append_line(&mut self, line: &str) -> &String;
+/// }
+///
+/// #[doc(hidden)]
+/// impl AppendLine for String {
+///     fn append_line(&mut self, content: &str) -> &String {
+///         self.push_str(content);
+///         self.push('\n');
+///         self
+///     }
+/// }
+///
+/// if let Ok(lines) = read_lines(file_path) {
+///     for line in lines.flatten() {
+///         if is_header_line(&line) {
+///             headers.append_line(&line);
+///             continue;
+///         }
+///     }
 /// }
 /// ```
-fn is_header_line(line: &str) -> bool {
+pub fn is_header_line(line: &str) -> bool {
     line.starts_with('#')
 }
 
@@ -188,9 +220,48 @@ pub fn extract_variants_to_batches(
     }
 }
 
+/// Parses the user input for the compression level and returns the corresponding compression level
+/// from the bgzip crate.
+pub fn parse_compression_level(raw_compression_level: Option<String>) -> Option<Compression> {
+    match raw_compression_level {
+        Some(user_input) => match user_input.to_lowercase().as_ref() {
+            "fast" => Some(Compression::fast()),
+            "best" => Some(Compression::best()),
+            "default" => Some(Compression::default()),
+            _ => None,
+        },
+        None => None,
+    }
+}
+
+/// Wrapper function for extract_variants_to_batches to be called from Python
+#[pyfunction]
+fn py_extract_variants_to_batches(
+    file_path: &str,
+    output_path: &str,
+    batch_size: usize,
+    compression_level: Option<String>,
+) -> PyResult<()> {
+    extract_variants_to_batches(
+        file_path,
+        batch_size,
+        Path::new(output_path),
+        parse_compression_level(compression_level),
+    );
+    Ok(())
+}
+
+#[pymodule]
+fn vcf_batcher(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(py_extract_variants_to_batches, m)?)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::batch::{extract_variants_to_batches, is_header_line, read_lines};
+    use bgzip::Compression;
+
+    use crate::{extract_variants_to_batches, is_header_line, parse_compression_level, read_lines};
 
     #[test]
     fn test_is_header_line() {
@@ -247,5 +318,15 @@ mod tests {
                 panic!("Could not read file {}", batch_file_path);
             }
         }
+    }
+
+    #[test]
+    fn test_parse_compression() {
+        assert_eq!(parse_compression_level(Some("fast".to_string())), Some(Compression::fast()));
+        assert_eq!(parse_compression_level(Some("best".to_string())), Some(Compression::best()));
+        assert_eq!(parse_compression_level(Some("default".to_string())), Some(Compression::default()));
+        assert_eq!(parse_compression_level(Some("none".to_string())), None);
+        assert_eq!(parse_compression_level(Some("invalid".to_string())), None);
+        assert_eq!(parse_compression_level(None), None);
     }
 }
