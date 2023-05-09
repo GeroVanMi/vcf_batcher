@@ -47,8 +47,8 @@ impl Iterator for ReaderLines {
 ///
 /// ```
 /// use std::path::Path;
-/// use vcf_batcher::save_batch;
-/// save_batch("Hello, world!".to_string(), &1, Path::new("test"), None);
+/// use vcf_batcher_lib::save_batch;
+/// save_batch("Hello, world!".to_string(), &1, Path::new("test_data/temporary"), None);
 /// ```
 pub fn save_batch(
     contents: String,
@@ -108,7 +108,7 @@ pub fn read_lines<P>(file_path: P) -> Result<ReaderLines, io::Error>
 ///
 /// ```
 /// #[doc(hidden)]
-/// use vcf_batcher::{is_header_line, read_lines};
+/// use vcf_batcher_lib::{is_header_line, read_lines};
 /// #[doc(hidden)]
 /// let file_path = "test_data/batch_01.vcf.gz";
 /// #[doc(hidden)]
@@ -252,7 +252,7 @@ fn py_extract_variants_to_batches(
 }
 
 #[pymodule]
-fn vcf_batcher(_py: Python, m: &PyModule) -> PyResult<()> {
+fn vcf_batcher_lib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_extract_variants_to_batches, m)?)?;
     Ok(())
 }

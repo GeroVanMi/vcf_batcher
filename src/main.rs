@@ -3,7 +3,7 @@ use std::path::Path;
 use std::time::Instant;
 
 use clap::Parser;
-use vcf_batcher::{extract_variants_to_batches, parse_compression_level};
+use vcf_batcher_lib::{extract_variants_to_batches, parse_compression_level};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

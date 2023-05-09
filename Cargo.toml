@@ -12,11 +12,11 @@ keywords = ["vcf", "batch", "batching", "variant_call_file"]
 categories = ["command-line-utilities"]
 
 [lib]
-name = "vcf_batcher"
+name = "vcf_batcher_lib"
 crate-type = ["lib", "cdylib"]
 
 [[bin]]
-name = "vcf-batcher-cli"
+name = "vcf-batcher"
 path = "src/main.rs"
 
 [dependencies]
