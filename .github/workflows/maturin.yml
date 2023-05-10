@@ -60,10 +60,6 @@ jobs:
         with:
           command: upload
           args: --skip-existing *
-      - uses: actions/download-artifact@v3
-        with:
-          name: wasm-wheels
-          path: wasm
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
