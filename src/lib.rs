@@ -7,9 +7,9 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
 
-use bgzip::{BGZFError, BGZFReader, Compression, write::BGZFMultiThreadWriter};
-use pyo3::prelude::*;
 use self::ReaderLines::{UnzippedLines, ZippedLines};
+use bgzip::{write::BGZFMultiThreadWriter, BGZFError, BGZFReader, Compression};
+use pyo3::prelude::*;
 
 trait AppendLine {
     fn append_line(&mut self, line: &str) -> &String;
@@ -84,12 +84,11 @@ pub fn save_batch(
     Ok(())
 }
 
-
 /// The output is wrapped in a Result to allow matching on errors
 /// Returns an Iterator to the Reader of the lines of the file.
 pub fn read_lines<P>(file_path: P) -> Result<ReaderLines, io::Error>
-    where
-        P: AsRef<Path>,
+where
+    P: AsRef<Path>,
 {
     let file = File::open(&file_path).expect("File does not exist.");
     // If the file ends in .gz, we assume it is bgzipped
@@ -107,18 +106,16 @@ pub fn read_lines<P>(file_path: P) -> Result<ReaderLines, io::Error>
 /// # Examples
 ///
 /// ```
-/// #[doc(hidden)]
+///
 /// use vcf_batcher::{is_header_line, read_lines};
-/// #[doc(hidden)]
+///
 /// let file_path = "test_data/batch_01.vcf.gz";
-/// #[doc(hidden)]
 /// let mut headers = String::new();
-/// #[doc(hidden)]
+///
 /// trait AppendLine {
 ///     fn append_line(&mut self, line: &str) -> &String;
 /// }
 ///
-/// #[doc(hidden)]
 /// impl AppendLine for String {
 ///     fn append_line(&mut self, content: &str) -> &String {
 ///         self.push_str(content);
@@ -322,9 +319,18 @@ mod tests {
 
     #[test]
     fn test_parse_compression() {
-        assert_eq!(parse_compression_level(Some("fast".to_string())), Some(Compression::fast()));
-        assert_eq!(parse_compression_level(Some("best".to_string())), Some(Compression::best()));
-        assert_eq!(parse_compression_level(Some("default".to_string())), Some(Compression::default()));
+        assert_eq!(
+            parse_compression_level(Some("fast".to_string())),
+            Some(Compression::fast())
+        );
+        assert_eq!(
+            parse_compression_level(Some("best".to_string())),
+            Some(Compression::best())
+        );
+        assert_eq!(
+            parse_compression_level(Some("default".to_string())),
+            Some(Compression::default())
+        );
         assert_eq!(parse_compression_level(Some("none".to_string())), None);
         assert_eq!(parse_compression_level(Some("invalid".to_string())), None);
         assert_eq!(parse_compression_level(None), None);
