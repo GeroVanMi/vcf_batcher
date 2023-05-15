@@ -1,7 +1,7 @@
 [package]
-name = "vcf-batcher"
+name = "vcf_batcher"
 description = "Command-line tool to cut VCF (variant call files) into smaller batches, intended to be used for multiprocessing or distributed computing."
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Gérôme Meyer <gerome.meyer@icloud.com>"]
 license = "MIT"
