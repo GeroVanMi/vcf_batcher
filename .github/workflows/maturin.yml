@@ -68,7 +68,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [macos]
+    needs: [macos, windows]
     permissions:
       # Used to upload release artifacts
       contents: write
