@@ -16,7 +16,7 @@ name = "vcf_batcher"
 crate-type = ["lib", "cdylib"]
 
 [[bin]]
-name = "vcf-batcher-cli"
+name = "vcf_batcher_cli"
 path = "src/main.rs"
 
 [dependencies]

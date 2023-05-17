@@ -48,7 +48,7 @@ impl Iterator for ReaderLines {
 /// ```
 /// use std::path::Path;
 /// use vcf_batcher::save_batch;
-/// save_batch("Hello, world!".to_string(), &1, Path::new("test"), None);
+/// save_batch("Hello, world!".to_string(), &1, Path::new("test_data/temporary"), None);
 /// ```
 pub fn save_batch(
     contents: String,
